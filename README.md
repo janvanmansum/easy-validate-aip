@@ -1,1 +1,2 @@
-# easy-bagit-fixity-checker
+easy-validate-bags
+==================
