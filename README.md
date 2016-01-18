@@ -25,10 +25,33 @@ When validating a single AIP the directory containing the AIP is passed as an ar
 whether the bag is valid.
 
 ### Validating all the AIPs in an EASY Fedora 3.x repository
+To validate all the AIPs registered in an EASY Fedora 3.x repository the service URL of the repository and the base directory containing
+all the AIPs are passed as arguments. The program queries Fedora's Resource Index for all the datasets that have the relation `http://dans.knaw.nl/ontologies/relations#storedInDarkArchive` set to `true`. From these datasets the [URN:NBN] identifier is retrieved.
+This identifier is used to find the AIP directory in the AIP base directory. 
+
+
+ARGUMENTS
+---------
 
 
 
+INSTALLATION AND CONFIGURATION
+------------------------------
+
+
+
+BUILDING FROM SOURCE
+--------------------
+Prerequisites:
+
+* Java 8 or higher
+* Maven 3.3.3 or higher
  
+Steps:
+
+        git clone https://github.com/DANS-KNAW/easy-validate-aip.git
+        cd easy-validate-aip
+        mvn install
 
 
 
