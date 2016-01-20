@@ -1,5 +1,6 @@
 easy-validate-aip
 =================
+[![Build Status](https://travis-ci.org/DANS-KNAW/easy-validate-aip.svg?branch=master)](https://travis-ci.org/DANS-KNAW/easy-validate-aip)
 
 Validate one or more AIPs in (dark) archival storage
 
