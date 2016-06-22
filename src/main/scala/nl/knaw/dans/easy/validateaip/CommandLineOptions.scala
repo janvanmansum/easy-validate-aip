@@ -35,33 +35,43 @@ class ScallopCommandLine(args: Array[String]) extends ScallopConf(args) {
     new File(f)
   })
 
-  printedName = "ValidateAip"
+  printedName = "easy-validate-aip"
   version(s"$printedName ${Version()}")
   banner(
     s"""
        |Validate one or more AIPs in (dark) archival storage.
        |
+       |When validating a single AIP the directory containing the AIP is passed as an argument.
+       |The program reports back a message stating whether the bag is valid.
+       |
+       |To validate all the AIPs registered in an EASY Fedora 3.x repository the service URL
+       |of the repository and the base directory containing all the AIPs are passed as arguments.
+       |The program queries Fedora's Resource Index for all the datasets that have the relation
+       |http://dans.knaw.nl/ontologies/relations#storedInDarkArchive set to true.
+       |From these datasets the [URN:NBN] identifier is retrieved. This identifier is used to
+       |find the AIP directory in the AIP base directory.
+       |
        |Usage:
        |
-       | $printedName <aip-directory>
-       | $printedName <Fedora service URL> <aip-base-directory>
+       | single:     $printedName -a <aip-directory>
+       | multiple:   $printedName -f <Fedora service URL> -b <aip-base-directory>
        |
        |Options:
        | """.stripMargin)
 
-  val aipDirectory = trailArg[File](name = "aip-directory",
-    descr = "Directory that will be validated.",
-    required = false)(fileShouldExist)
+  val aipDirectory = opt[File](name = "aip-directory",
+    short = 'a', descr = "Directory that will be validated.")(fileShouldExist)
 
-  val fedoraServiceUrl = trailArg[URL](name = "fedora-service-url",
-    required = false,
-    descr = "URL of Fedora Commons Repository Server to connect to ")
+  val fedoraServiceUrl = opt[URL](name = "fedora-service-url",
+    short = 'f', descr = "URL of Fedora Commons Repository Server to connect to ")
 
-  val aipBaseDirectory = trailArg[File](name = "aip-base-directory",
-    required = false,
-    descr = "")(fileShouldExist) // TODO fill in this value
+  val aipBaseDirectory = opt[File](name = "aip-base-directory",
+    short = 'b', descr = "Base directory containing all the AIPs")(fileShouldExist)
 
-  footer("")
+  // either aipDirectory or both fedoraServiceUrl and aipBaseDirectory are supplied
+  codependent(fedoraServiceUrl, aipBaseDirectory)
+  conflicts(aipDirectory, fedoraServiceUrl :: aipBaseDirectory :: Nil)
+
   verify()
 }
 
@@ -70,15 +80,17 @@ object CommandLineOptions {
 
   def parse(args: Array[String]): Settings = {
     log.debug("Parsing command line ...")
-    val homeDir = new File(System.getProperty("app.home"))
 
     val opts = new ScallopCommandLine(args)
 
-    if (args.length == 1) {
+    if (opts.aipDirectory.isSupplied) {
       log.debug("Validate Single AIP...")
       SingleSettings(opts.aipDirectory())
     }
     else {
+      assert(opts.fedoraServiceUrl.isSupplied)
+      assert(opts.aipBaseDirectory.isSupplied)
+
       log.debug("Validate Multiple AIPs...")
       MultipleSettings(opts.fedoraServiceUrl(), opts.aipBaseDirectory())
     }
